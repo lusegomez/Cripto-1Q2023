@@ -14,18 +14,21 @@ def verify_params(distribute_or_recovery, image_file, k, output_dir):
         raise NotADirectoryError(f"No es un directorio válido: {output_dir}")
     if not (k > 2 and k <= get_n(output_dir)):
         raise ValueError("k debe ser mayor o igual que 3 y menor o igual que n")
-        
-if len(sys.argv) != 5:
-    raise ValueError("Se requieren 4 argumentos: <operation> <file.bmp> <k> <directory>")
 
-try:
-    distribute_or_recovery = sys.argv[1]
-    image_file = sys.argv[2]
-    k = int(sys.argv[3])
-    output_dir = sys.argv[4]
+def call_verify_params():
+    if len(sys.argv) != 5:
+        raise ValueError("Se requieren 4 argumentos: <operation> <file.bmp> <k> <directory>")
 
-    verify_params(distribute_or_recovery, image_file, k, output_dir)
-except Exception as e:
-    print(f"Error: {e}")
-    sys.exit(1)
+    try:
+        distribute_or_recovery = sys.argv[1]
+        image_file = sys.argv[2]
+        k = int(sys.argv[3])
+        output_dir = sys.argv[4]
+
+        verify_params(distribute_or_recovery, image_file, k, output_dir)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+    return distribute_or_recovery, image_file, k, output_dir
 
