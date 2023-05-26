@@ -1,5 +1,4 @@
 from PIL import Image
-from main import call_verify_params as verify_params
 from lib import *
 
 distribute_or_recovery, image_file, k, output_dir = verify_params()
