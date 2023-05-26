@@ -6,6 +6,6 @@ image = Image.open("yoda.jpg")
 image = image.resize(SIZE)
 image = image.convert("L")
 
-image.save("imagen.bmp")
+image.save("yoda.bmp")
 
 image.show()
