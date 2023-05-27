@@ -10,14 +10,15 @@ def bits_to_int(bits):
     integer = int(bits, 2)
     return integer
 
-def replace_last_four_chars(string, patch):
+def replace_last_n_chars(string, patch, n):
     replaced_string = ""
-    if len(string) >= 4:
-        replaced_string = string[:-4] + patch
+    if len(string) >= n:
+        replaced_string = string[:-n] + patch
     else:
         print("error in string patching size")
         exit(1)
     return replaced_string
+
 
 
 ### verify params
