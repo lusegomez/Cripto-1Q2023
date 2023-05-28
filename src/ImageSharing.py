@@ -14,33 +14,34 @@ class ImageSharing:
         inverses_adjusted = {int(k): v for k, v in inverses.items()}
         self.inverses = inverses_adjusted
         pass
-    def generate_shadows(self, image, n):
+    def generate_shadows(self, image, k):
         shadows = []
         # divide the image into non-overlapping k-pixels blocks (B1, B2, ..., Bl)
         # in this case we use rows qty
+        for o in range(image.shape[0]):
+            shadows.append([])
         for index, block in enumerate(image):
             polynomial = Polynomial(block)
             # compute n share: vj1 = fj(1), ... , vjn=fj(n); j in [1,l]
-            shares = []
-            for i in range(1, n+1):
+            for i in range(1, image.shape[0]+1):
                 share = polynomial(i)
-                shares.append(share)
-            # output n shadows: Si = v1i || v2i || v3i || ... || vli
-            shadow = np.array(shares)
-            shadows.append(shadow)
+                shadows[i-1].append((i,share))
+        # output n shadows: Si = v1i || v2i || v3i || ... || vli
         return shadows
 
     def reconstruct_image(self, shadows):
         num_blocks = len(shadows)
         block_size = len(shadows[0])
         reconstructed = np.array([])
-        shares = []
-        for row in shadows:
-            shares.append(list(row))
+        shares=[[],[],[],[]]
+        for s, share in enumerate(shares):
+            for o in range(num_blocks):
+                share.append(shadows[o][s])
         coefs = []
         # Extract v1j, v2j, ..., vmj from S1, S2, ..., Sm (where Si is the i-th shadow)
         for j in range(block_size):
-            coefs.append(self.__gauss_polynomial([i for i in range(1, num_blocks + 1)], shares[j]))
+            t = np.transpose(shares[j])
+            coefs.append(self.__gauss_polynomial(t[0], t[1])) #[i for i in range(1, num_blocks + 1)]
 
         return coefs
      
