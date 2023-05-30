@@ -53,3 +53,11 @@ def verify_params():
 
     return distribute_or_recovery, image_file, k, output_dir
 ### end verify params
+
+MOD = 251
+
+def evaluate_pol(pol, x):
+    ret = 0
+    for index, a in enumerate(pol):
+        ret += a * x**index
+    return ret % MOD

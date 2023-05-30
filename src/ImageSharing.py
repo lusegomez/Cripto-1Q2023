@@ -4,38 +4,66 @@ from numpy.polynomial.polynomial import Polynomial
 import numpy as np
 import pandas as pd
 from sympy import symbols, expand, Mod
+from lib import evaluate_pol, MOD
 
-MOD = 251
 
-class ImageSharing:
-    def __init__(self):
+
+class Shamir:
+    def __init__(self, k, n):
         df = pd.read_csv('./inverses.csv', index_col='Number')
         inverses = df['Inverse'].to_dict()
         inverses_adjusted = {int(k): v for k, v in inverses.items()}
         self.inverses = inverses_adjusted
+        self.k = k
+        self.n = n
         pass
-    def generate_shadows(self, image, k):
-        shadows = []
-        # divide the image into non-overlapping k-pixels blocks (B1, B2, ..., Bl)
-        # in this case we use rows qty
-        for o in range(image.shape[0]):
-            shadows.append([])
-        for index, block in enumerate(image):
-            polynomial = Polynomial(block)
-            # compute n share: vj1 = fj(1), ... , vjn=fj(n); j in [1,l]
-            for i in range(1, image.shape[0]+1):
-                share = polynomial(i)
-                shadows[i-1].append((i,share))
-        # output n shadows: Si = v1i || v2i || v3i || ... || vli
+
+
+    def generate_shadows(self, image):
+        shadows = [[] for _ in range(self.n)]
+        flat = image.flatten()
+        t = 2 * self.k - 2
+        # divide the image into t non-overlapping 2k-2 pixels blocks (B1, B2, ..., Bl)
+        if len(flat) % t != 0:
+            print("error in image size, not divisible by 2k-2")
+            exit(1)
+        blocks = np.array_split(flat, len(flat) / t)
+        f = []
+        g = []
+        vij = []
+
+        for index, block in enumerate(blocks):
+            a = []
+            for i in range(self.k):
+                a.append(block[i])
+            f.append(a)
+
+            b = []
+            ri = randint(1, 251)
+            b.append( (- ri * a[0] ) % MOD) #b[0]
+            b.append( (- ri * a[1] ) % MOD) #b[1]
+            for i in range(self.k-2):
+                b.append(block[self.k + i])
+            g.append(b)
+
+            for j in range(1, self.n+1): #1...n
+                mij = evaluate_pol(a, j)
+                dij = evaluate_pol(b, j)
+                shadows[j-1].append({mij, dij})
+
         return shadows
+
 
     def reconstruct_image(self, shadows):
         num_blocks = len(shadows)
+        if num_blocks < self.k:
+            print("error in num blocks, need at least K to decipher")
+            exit(1)
         block_size = len(shadows[0])
         reconstructed = np.array([])
-        shares=[[],[],[],[]]
+        shares = [[] for _ in range(block_size)]
         for s, share in enumerate(shares):
-            for o in range(num_blocks):
+            for o in range(self.k):
                 share.append(shadows[o][s])
         coefs = []
         # Extract v1j, v2j, ..., vmj from S1, S2, ..., Sm (where Si is the i-th shadow)
@@ -44,7 +72,6 @@ class ImageSharing:
             coefs.append(self.__gauss_polynomial(t[0], t[1])) #[i for i in range(1, num_blocks + 1)]
 
         return coefs
-     
 
      ###############################################
 
@@ -70,5 +97,42 @@ class ImageSharing:
             matrix.append(vector)
         solution = self.__solve_linear_system(matrix)
         return solution
-    
+
+
+    '''
+    def generate_shadows(self, image):
+        shadows = []
+        # divide the image into non-overlapping k-pixels blocks (B1, B2, ..., Bl)
+        # in this case we use rows qty
+        for o in range(image.shape[0]):
+            shadows.append([])
+        for index, block in enumerate(image):
+            polynomial = Polynomial(block)
+            # compute n share: vj1 = fj(1), ... , vjn=fj(n); j in [1,l]
+            for i in range(1, image.shape[0]+1):
+                share = polynomial(i)
+                shadows[i-1].append((i,share))
+        # output n shadows: Si = v1i || v2i || v3i || ... || vli
+        print("done generating shadows")
+        return shadows
+
+    def reconstruct_image(self, shadows):
+        num_blocks = len(shadows)
+        if num_blocks < self.k:
+            print("error in num blocks, need at least K to decipher")
+            exit(1)
+        block_size = len(shadows[0])
+        reconstructed = np.array([])
+        shares = [[] for _ in range(block_size)]
+        for s, share in enumerate(shares):
+            for o in range(self.k):
+                share.append(shadows[o][s])
+        coefs = []
+        # Extract v1j, v2j, ..., vmj from S1, S2, ..., Sm (where Si is the i-th shadow)
+        for j in range(block_size):
+            t = np.transpose(shares[j])
+            coefs.append(self.__gauss_polynomial(t[0], t[1])) #[i for i in range(1, num_blocks + 1)]
+
+        return coefs
+     '''
   
