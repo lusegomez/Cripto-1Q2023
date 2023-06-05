@@ -1,0 +1,4 @@
+makefile
+readme
+
+shadow_simplified is of varying lengths? BUG

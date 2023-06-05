@@ -36,12 +36,28 @@ class Shamir:
             a = []
             for i in range(self.k):
                 a.append(block[i])
+            if a[0] == 0 or a[0] == 251:
+                a[0] = 1
+            if a[1] == 0 or a[1] == 251:
+                a[1] = 1
             f.append(a)
 
             b = []
-            ri = randint(1, 251)
-            b.append( (- ri * a[0] ) % MOD) #b[0]
-            b.append( (- ri * a[1] ) % MOD) #b[1]
+            ri = randint(1, 250) # != 0 y != 251
+            # ri = 77
+
+            b0 =  (- ri * a[0] ) % MOD
+            if b0 != 0 and b0 != 251:
+                b.append(b0)
+            else:
+                b.append(1)
+
+            b1 =  (- ri * a[1] ) % MOD
+            if b1 != 0 and b1 != 251:
+                b.append(b1) #b[1]
+            else:
+                b.append(1)
+
             for i in range(self.k-2):
                 b.append(block[self.k + i])
             g.append(b)
@@ -50,6 +66,8 @@ class Shamir:
                 mij = evaluate_pol(a, j)
                 dij = evaluate_pol(b, j)
                 shadows[j-1].append({mij, dij})
+                # shadows.append(mij)
+                # shadows.append(dij)
 
         return shadows
 

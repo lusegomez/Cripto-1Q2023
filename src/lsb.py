@@ -1,9 +1,34 @@
-from PIL import Image
 from lib import *
 
-distribute_or_recovery, image_file, k, output_dir = verify_params()
+#distribute_or_recovery, image_file, k, output_dir = verify_params()
 
-def apply_shadow(shadow, carriers, LSB):
+def apply_shadow(shadow, carrierData, copy, index, LSB, height, width):
+    shadowPosition = 0
+    a = len(shadow)
+    print(a)
+    for y in range(height):
+        for x in range(width): ##iterate whole carrier
+            pixel_bits = int_to_bits(carrierData[x,y])
+            patch = ""
+            if LSB == 4:
+                patch = f"{shadow[shadowPosition]}{shadow[shadowPosition+1]}{shadow[shadowPosition+2]}{shadow[shadowPosition+3]}"
+            elif LSB == 2:
+                patch = f"{shadow[shadowPosition]}{shadow[shadowPosition + 1]}"
+            shadowPosition += LSB
+            carrierData[x, y] = bits_to_int(replace_last_n_chars(pixel_bits, patch, LSB)) # re-write last N digits of carrier
+
+            if shadowPosition == len(shadow):
+                print(f"done reading shadow, position {shadowPosition}\ncarrier pos x{x} y{y}")
+                editedCarrier = f"./images/{index+1}_edited.bmp"
+                copy.save(editedCarrier)
+                return
+            if shadow[shadowPosition] == " ":
+                shadowPosition += 1
+    print("Error, carrier is not big enough for shadow")
+    exit(1)
+
+''' original:
+def apply_shadow(shadow, carriers, LSB, height, width):
     shadowPosition = 0
     for i in range(len(carriers)): ##iterate through carriers
         # print(f"i {i}")
@@ -34,9 +59,10 @@ def apply_shadow(shadow, carriers, LSB):
                     return
                 if shadowBinaryString[shadowPosition] == " ":
                     shadowPosition += 1
+                    '''
 
 
-def recover_shadow(shadow, carriers, LSB):
+def recover_shadow(shadow, carriers, LSB, width, height):
     shadowX, shadowY = 0,0
     shadowBuffer = ""
     bufferOccupiedSize = 0
@@ -68,6 +94,7 @@ def recover_shadow(shadow, carriers, LSB):
 
 ## execution
 
+'''
 if distribute_or_recovery == "d":
     carrier1 = Image.open(output_dir + "/1cat.bmp")
     carrier2 = Image.open(output_dir + "/2penguin.bmp")
@@ -80,8 +107,6 @@ elif distribute_or_recovery == "r":
     carrier3 = Image.open(output_dir + "/edited_sunflower.bmp")
     carrier4 = Image.open(output_dir + "/edited_dog.bmp")
     carrier5 = Image.open(output_dir + "/edited_kangaroo.bmp")
-
-
 else:
     carrier1 = None
     carrier2 = None
@@ -89,7 +114,8 @@ else:
     carrier4 = None
     carrier5 = None
     exit(1)
-
+'''
+'''
 # copy to allow modify of files
 width, height = carrier1.size
 carrier1Copy = carrier1.copy()
@@ -105,7 +131,9 @@ carrier4PixelData = carrier4Copy.load()
 carrier5PixelData = carrier5Copy.load()
 
 carriers_data = [carrier1PixelData, carrier2PixelData, carrier3PixelData, carrier4PixelData, carrier5PixelData]
+'''
 ### done preparing data
+'''
 LSB = None
 if k in [3, 4]:
     LSB = 4
@@ -114,10 +142,18 @@ elif k in [5, 6, 7, 8]:
 else:
     print("Error deciding which LSB to use")
     exit(1)
+'''
 
+'''
 if distribute_or_recovery == "d":
     ### set data
-    shadow = Image.open(image_file)
+    image = Image.open("./yoda.bmp")
+    np_image = np.array(image)
+    image_sharing = Shamir(3, 4)
+    shadows = image_sharing.generate_shadows(np_image)
+
+    #shadow = Image.open(image_file)
+    shadow = shadows[0]
     binary_data = shadow.tobytes()
     shadowBinaryString = ' '.join(format(byte, '08b') for byte in binary_data)
 
@@ -129,3 +165,4 @@ elif distribute_or_recovery == "r":
 
     recover_shadow(recovered_shadow.load(), carriers_data, LSB)
     recovered_shadow.save(output_dir + "/recovered_shadow.bmp")
+'''

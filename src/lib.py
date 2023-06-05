@@ -1,5 +1,6 @@
 import sys
 import os
+import numpy as np
 
 def int_to_bits(n):
     bits = bin(n)[2:]
