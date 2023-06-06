@@ -2,7 +2,9 @@ from Shamir import Shamir
 from lib import *
 from lsb import apply_shadow, recover_shadow
 
+
 distribute_or_recovery, image_file, k, output_dir = verify_params()
+
 
 # open files
 carriers = []
@@ -57,11 +59,13 @@ if distribute_or_recovery == "d":
     exit(0)
 
 elif distribute_or_recovery == "r":
-    recovered_shadow = Image.new("L", (width, height))
-    
-    recover_shadow(recovered_shadow.load(), carriers_data, LSB, width, height)
-    
-    recovered_shadow.save(f"{output_dir}/{image_file}")
+    # recovered_secret = Image.new("L", (width, height))
+
+    #todo reordenar carriers_data teniendo en cuenta el special byte
+    for index, carrier in enumerate(carriers_data):
+        shadow = recover_shadow(carrier, LSB, width, height, k)
+
+    # recovered_secret.save(f"{output_dir}/{image_file}")
 
 
 #

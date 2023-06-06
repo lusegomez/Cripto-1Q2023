@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from PIL import Image
+import struct
 
 def int_to_bits(n):
     bits = bin(n)[2:]
@@ -64,3 +65,33 @@ def evaluate_pol(pol, x):
     for index, a in enumerate(pol):
         ret += a * x**index
     return ret % MOD
+
+
+def change_reserved_bit(editedCarrier, newValue):
+    # Access the raw file data
+    with open(editedCarrier, 'rb') as file:
+        file_data = file.read()
+
+    # Update the reserved bytes with a new value
+    new_reserved_value = newValue
+    new_reserved_bytes = struct.pack('<H', new_reserved_value)
+    updated_file_data = file_data[:6] + new_reserved_bytes + file_data[8:]
+
+    # Save the updated file data back to the bitmap file
+    with open(editedCarrier, 'wb') as file:
+        file.write(updated_file_data)
+
+def read_reserved_bit(image_file):
+    bmp = open(image_file, 'rb')
+    bmp.read(2)
+    bmp.read(4)
+    return int.from_bytes(bmp.read(2), byteorder='little')
+
+'''
+bmp = open(image_file, 'rb')
+print('Type:', bmp.read(2).decode())
+print('Size: %s' % struct.unpack('I', bmp.read(4)))
+print('Reserved 1: %s' % struct.unpack('H', bmp.read(2)))
+print('Reserved 2: %s' % struct.unpack('H', bmp.read(2)))
+print('Offset: %s' % struct.unpack('I', bmp.read(4)))
+'''

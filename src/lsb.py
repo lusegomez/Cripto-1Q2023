@@ -20,81 +20,96 @@ def apply_shadow(shadow, carrierData, copy, index, LSB, height, width):
             if shadowPosition == len(shadow):
                 print(f"done reading shadow, position {shadowPosition}\ncarrier pos x{x} y{y}")
                 editedCarrier = f"./images/{index+1}_edited.bmp"
-                #add special number in header
-                # headers = copy.info
-                # headers['bmp_header']
-
                 copy.save(editedCarrier)
+
+                change_reserved_bit(editedCarrier, index+1)
+
                 return
             if shadow[shadowPosition] == " ":
                 shadowPosition += 1
     print("Error, carrier is not big enough for shadow")
     exit(1)
 
-''' original, when it was applying a bmp to other n bmps:
-def apply_shadow(shadow, carriers, LSB, height, width):
-    shadowPosition = 0
-    for i in range(len(carriers)): ##iterate through carriers
-        # print(f"i {i}")
-        for y in range(height):
-            # print(y)
-            for x in range(width): ##iterate whole carrier
-                pixel_bits = int_to_bits(carriers[i][x,y])
-                patch = ""
-                if LSB == 4:
-                    patch = f"{shadow[shadowPosition]}{shadow[shadowPosition+1]}{shadow[shadowPosition+2]}{shadow[shadowPosition+3]}"
-                elif LSB == 2:
-                    patch = f"{shadow[shadowPosition]}{shadow[shadowPosition + 1]}"
-                shadowPosition += LSB
-                carriers[i][x, y] = bits_to_int(replace_last_n_chars(pixel_bits, patch, LSB)) # re-write last N digits of carrier
 
-                if shadowPosition == len(shadowBinaryString):
-                    print(f"done reading shadow, position {shadowPosition}\ncarrier {i}\ncarrier pos x{x} y{y}")
-                    editedCarrier1 = output_dir + "/edited_cat.bmp"
-                    editedCarrier2 = output_dir + "/edited_penguin.bmp"
-                    editedCarrier3 = output_dir + "/edited_sunflower.bmp"
-                    editedCarrier4 = output_dir + "/edited_dog.bmp"
-                    editedCarrier5 = output_dir + "/edited_kangaroo.bmp"
-                    carrier1Copy.save(editedCarrier1)
-                    carrier2Copy.save(editedCarrier2)
-                    carrier3Copy.save(editedCarrier3)
-                    carrier4Copy.save(editedCarrier4)
-                    carrier5Copy.save(editedCarrier5)
-                    return
-                if shadowBinaryString[shadowPosition] == " ":
-                    shadowPosition += 1
-                    '''
+def recover_shadow(carrier, LSB, width, height, k):
+    if (width * height) % (2*k-2) != 0:
+        print("Error, wrong K for this image size")
+        exit(1)
+    tuples_to_read = (width * height) / (2*k-2)
 
-
-def recover_shadow(shadow, carriers, LSB, width, height):
     shadowX, shadowY = 0,0
+    shadow = []
     shadowBuffer = ""
     bufferOccupiedSize = 0
-    for i in range(len(carriers)):     ##iterate through carriers
-        for y in range(height):
-            for x in range(width): ##iterate whole carrier
-                pixel_bits = int_to_bits(carriers[i][x, y])
-                fragment = f"{pixel_bits[-LSB:]}"
+    tupleBuffer = None
+    for y in range(height):
+        for x in range(width): ##iterate whole carrier
+            pixel_bits = int_to_bits(carrier[x, y])
+            fragment = f"{pixel_bits[-LSB:]}"
 
-                if shadowBuffer == "":
-                    shadowBuffer = fragment #+ '0' * (8-LSB)
-                    bufferOccupiedSize += LSB
-                else:
-                    shadowBuffer = shadowBuffer[:bufferOccupiedSize] + fragment #+ '0' * (8-bufferOccupiedSize-LSB)
-                    bufferOccupiedSize += LSB
-                    if bufferOccupiedSize == 8:
-                        shadow[shadowX, shadowY] = bits_to_int(shadowBuffer)
-                        shadowBuffer = ""
-                        bufferOccupiedSize = 0
-                        if shadowX < width-1:
-                            shadowX += 1
+            if shadowBuffer == "":
+                shadowBuffer = fragment #+ '0' * (8-LSB)
+                bufferOccupiedSize += LSB
+            else:
+                shadowBuffer = shadowBuffer[:bufferOccupiedSize] + fragment #+ '0' * (8-bufferOccupiedSize-LSB)
+                bufferOccupiedSize += LSB
+                if bufferOccupiedSize == 8:
+                    if tupleBuffer is None:
+                        tupleBuffer = bits_to_int(shadowBuffer)
+                    else:
+                        shadow.append((tupleBuffer, bits_to_int(shadowBuffer)))
+                        tupleBuffer = None
+                    shadowBuffer = ""
+                    bufferOccupiedSize = 0
+                    if len(shadow) == tuples_to_read:
+                        print(f"\ndone writing shadow\nstopped in:\ncarrier pos x{x} y{y}")
+                        return shadow
+
+                    if shadowX < width-1:
+                        shadowX += 1
+                    else:
+                        if shadowY < height-1:
+                            shadowX = 0
+                            shadowY += 1
                         else:
-                            if shadowY < height-1:
-                                shadowX = 0
-                                shadowY += 1
-                            else:
-                                print(f"done writing shadow\nstopped in:\ncarrier {i}\ncarrier pos x{x} y{y}")
-                                return
+                            # print(f"done writing shadow\nstopped in:\ncarrier pos x{x} y{y}")
+                            # return shadow
+                            print("Error, image too small to contain shadow")
+                            exit(1)
+    print("Error, image too small to contain shadow")
+    exit(1)
+
+
+# original, when it was applying a bmp to other n bmps:
+# def recover_shadow(shadow, carriers, LSB, width, height):
+#     shadowX, shadowY = 0,0
+#     shadowBuffer = ""
+#     bufferOccupiedSize = 0
+#     for i in range(len(carriers)):     ##iterate through carriers
+#         for y in range(height):
+#             for x in range(width): ##iterate whole carrier
+#                 pixel_bits = int_to_bits(carriers[i][x, y])
+#                 fragment = f"{pixel_bits[-LSB:]}"
+#
+#                 if shadowBuffer == "":
+#                     shadowBuffer = fragment #+ '0' * (8-LSB)
+#                     bufferOccupiedSize += LSB
+#                 else:
+#                     shadowBuffer = shadowBuffer[:bufferOccupiedSize] + fragment #+ '0' * (8-bufferOccupiedSize-LSB)
+#                     bufferOccupiedSize += LSB
+#                     if bufferOccupiedSize == 8:
+#                         shadow[shadowX, shadowY] = bits_to_int(shadowBuffer)
+#                         shadowBuffer = ""
+#                         bufferOccupiedSize = 0
+#                         if shadowX < width-1:
+#                             shadowX += 1
+#                         else:
+#                             if shadowY < height-1:
+#                                 shadowX = 0
+#                                 shadowY += 1
+#                             else:
+#                                 print(f"done writing shadow\nstopped in:\ncarrier {i}\ncarrier pos x{x} y{y}")
+#                                 return
 
 #old stuff:
 
