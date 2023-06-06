@@ -49,7 +49,6 @@ if distribute_or_recovery == "d":
     image_sharing = Shamir(k, n)
     #generate Shadows
     shadows = image_sharing.generate_shadows(np_image)
-
     # apply LSB of each shadow to a cover file
     for index, s in enumerate(shadows):
         shadow_simplified = " ".join([bin(value)[2:].zfill(8) for tuple_ in s for value in tuple_])
@@ -66,6 +65,9 @@ elif distribute_or_recovery == "r":
         shadow = recover_shadow(carrier, LSB, width, height, k)
 
     # recovered_secret.save(f"{output_dir}/{image_file}")
+    image_sharing = Shamir(k, n)
+    recovered_blocks = image_sharing.reconstruct_image(shadow)
+
 
 
 #

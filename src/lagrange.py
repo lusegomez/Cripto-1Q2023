@@ -3,12 +3,12 @@ import pandas as pd
 
 
 def get_inverses():
-    df = pd.read_csv('./inverses_mod11.csv', index_col='Number')
+    df = pd.read_csv('./inverses.csv', index_col='Number')
     inv = df['Inverse'].to_dict()
     return {int(k): v for k, v in inv.items()}
 
 
-MOD = 11
+MOD = 251
 inverses = get_inverses()
 
 
