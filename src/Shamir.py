@@ -1,6 +1,6 @@
 from lib import *
 from random import randint
-
+from lagrange import lagrange
 
 class Shamir:
     def __init__(self, k, n):
@@ -67,23 +67,67 @@ class Shamir:
 
 
     def reconstruct_image(self, shadows):
-        num_blocks = len(shadows)
-        if num_blocks < self.k:
-            print("error in num blocks, need at least K to decipher")
-            exit(1)
-        block_size = len(shadows[0])
-        reconstructed = np.array([])
-        shares = [[] for _ in range(block_size)]
-        for s, share in enumerate(shares):
-            for o in range(self.k):
-                share.append(shadows[o][s])
-        coefs = []
-        # Extract v1j, v2j, ..., vmj from S1, S2, ..., Sm (where Si is the i-th shadow)
-        for j in range(block_size):
-            t = np.transpose(shares[j])
-            coefs.append(self.__gauss_polynomial(t[0], t[1])) #[i for i in range(1, num_blocks + 1)]
+        #Ejemplo de shadows
+        # s1 = [(m11, d11), (m21, d21), (m31, d31), (m41, d41)]
+        # s2 = [(m12, d12), (m22, d22), (m32, d32), (m42, d42)]
+        M = [ [shadow[i][0] for shadow in shadows] for i in range(len(shadows[0])) ]
+        D = [ [shadow[i][1] for shadow in shadows] for i in range(len(shadows[0])) ]
 
-        return coefs
+        f_coeffs = []
+        g_coeffs = []
+        for i in range(len(M)):
+            f_coeffs[i] = lagrange(M[i])
+        for i in range(len(D)):
+            g_coeffs[i] = lagrange(D[i])
+
+        for ri in range(1, 250):
+            found = True
+            for i in range(len(M)):
+                equation_1 = ri * f_coeffs[i][0] + g_coeffs[i][0]
+                equation_2 = ri * f_coeffs[i][1] + g_coeffs[i][1]
+
+                if equation_1 != 0 or equation_2 != 0:
+                    found = False
+                    break
+        if not found:
+            return -1
+
+
+        recovered = []
+        for i in range(len(shadows)):
+            block = f_coeffs[i][:-1] + g_coeffs[2:]
+            recovered.append(block)
+        return np.concatenate(recovered)
+
+
+        # j = len(shadows)        
+        # t = len(shadows[0])
+        # #Extract tup from shadows
+        # extracted_shadows = np.zeros(t, j, 2)
+
+        # for i in range(j):
+        #     for k in range(t):
+        #         mi, di = shadows[i][k]
+        #         extracted_shadows[k][i] = [mi, di]
+        # print(extracted_shadows)
+
+        # num_blocks = len(shadows)
+        # if num_blocks < self.k:
+        #     print("error in num blocks, need at least K to decipher")
+        #     exit(1)
+        # block_size = len(shadows[0])
+        # reconstructed = np.array([])
+        # shares = [[] for _ in range(block_size)]
+        # for s, share in enumerate(shares):
+        #     for o in range(self.k):
+        #         share.append(shadows[o][s])
+        # coefs = []
+        # # Extract v1j, v2j, ..., vmj from S1, S2, ..., Sm (where Si is the i-th shadow)
+        # for j in range(block_size):
+        #     t = np.transpose(shares[j])
+        #     coefs.append(self.__gauss_polynomial(t[0], t[1])) #[i for i in range(1, num_blocks + 1)]
+
+        # return coefs
 
      ###############################################
 
