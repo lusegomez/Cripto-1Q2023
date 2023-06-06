@@ -1,11 +1,5 @@
-from PIL import Image
+from lib import *
 from random import randint
-from numpy.polynomial.polynomial import Polynomial
-import numpy as np
-import pandas as pd
-from sympy import symbols, expand, Mod
-from lib import evaluate_pol, MOD
-
 
 
 class Shamir:
@@ -44,7 +38,7 @@ class Shamir:
 
             b = []
             ri = randint(1, 250) # != 0 y != 251
-            # ri = 77
+            #ri = 77
 
             b0 =  (- ri * a[0] ) % MOD
             if b0 != 0 and b0 != 251:
@@ -65,10 +59,10 @@ class Shamir:
             for j in range(1, self.n+1): #1...n
                 mij = evaluate_pol(a, j)
                 dij = evaluate_pol(b, j)
-                shadows[j-1].append({mij, dij})
+                tup = (mij, dij)
+                shadows[j-1].append(tup)
                 # shadows.append(mij)
                 # shadows.append(dij)
-
         return shadows
 
 

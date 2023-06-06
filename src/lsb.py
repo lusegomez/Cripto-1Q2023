@@ -4,8 +4,8 @@ from lib import *
 
 def apply_shadow(shadow, carrierData, copy, index, LSB, height, width):
     shadowPosition = 0
-    a = len(shadow)
-    print(a)
+    # a = len(shadow)
+    # print(a)
     for y in range(height):
         for x in range(width): ##iterate whole carrier
             pixel_bits = int_to_bits(carrierData[x,y])
@@ -20,6 +20,10 @@ def apply_shadow(shadow, carrierData, copy, index, LSB, height, width):
             if shadowPosition == len(shadow):
                 print(f"done reading shadow, position {shadowPosition}\ncarrier pos x{x} y{y}")
                 editedCarrier = f"./images/{index+1}_edited.bmp"
+                #add special number in header
+                # headers = copy.info
+                # headers['bmp_header']
+
                 copy.save(editedCarrier)
                 return
             if shadow[shadowPosition] == " ":
@@ -27,7 +31,7 @@ def apply_shadow(shadow, carrierData, copy, index, LSB, height, width):
     print("Error, carrier is not big enough for shadow")
     exit(1)
 
-''' original:
+''' original, when it was applying a bmp to other n bmps:
 def apply_shadow(shadow, carriers, LSB, height, width):
     shadowPosition = 0
     for i in range(len(carriers)): ##iterate through carriers
@@ -92,7 +96,10 @@ def recover_shadow(shadow, carriers, LSB, width, height):
                                 print(f"done writing shadow\nstopped in:\ncarrier {i}\ncarrier pos x{x} y{y}")
                                 return
 
+#old stuff:
+
 ## execution
+
 
 '''
 if distribute_or_recovery == "d":

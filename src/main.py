@@ -1,5 +1,4 @@
 from Shamir import Shamir
-from PIL import Image
 from lib import *
 from lsb import apply_shadow, recover_shadow
 
@@ -49,21 +48,21 @@ if distribute_or_recovery == "d":
     #generate Shadows
     shadows = image_sharing.generate_shadows(np_image)
 
-    for index, s in enumerate(shadows): #apply LSB of each shadow to a cover file
-        # shadow_simplified = [item for tuple_ in s for item in tuple_] #transform array of tuples into simple array
-        # shadow_simplified = " ".join([bin(value)[2:].zfill(8) for tuple_ in s for value in tuple_])
-        shadow_simplified = "".join(["".join([bin(value)[2:].zfill(8) if value != 0 else '00000000' for value in tup]) for tup in s])
-        # binary_data = shadow.tobytes()
-        # shadowBinaryString = ' '.join(format(byte, '08b') for byte in binary_data)
+    # apply LSB of each shadow to a cover file
+    for index, s in enumerate(shadows):
+        shadow_simplified = " ".join([bin(value)[2:].zfill(8) for tuple_ in s for value in tuple_])
         apply_shadow(shadow_simplified, carriers_data[index], copies[index], index, LSB, height, width)
+
     print("done")
     exit(0)
+
 elif distribute_or_recovery == "r":
     recovered_shadow = Image.new("L", (width, height))
     
     recover_shadow(recovered_shadow.load(), carriers_data, LSB, width, height)
     
     recovered_shadow.save(f"{output_dir}/{image_file}")
+
 
 #
 # #image = np.array(

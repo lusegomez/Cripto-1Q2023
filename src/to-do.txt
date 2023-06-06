@@ -1,4 +1,7 @@
 makefile
 readme
 
-shadow_simplified is of varying lengths? BUG
+adding number in header
+
+recover image from shadows
+do inverse lsb
