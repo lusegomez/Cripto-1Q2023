@@ -54,6 +54,18 @@ if distribute_or_recovery == "d":
     #generate Shadows
     shadows = image_sharing.generate_shadows(np_image)
 
+    #test
+    # shadowNumbers = [[1,1,1,1,1],[2,2,2,2,2],[3],4,5]
+    shadowNumbers = [1,2,3,4,5]
+    # for index, carrier in enumerate(carriers_data):
+    #     shadow = recover_shadow(carrier, LSB, width, height, k)
+    #     shadows.append(shadow)
+    #     shadowNumbers.append(read_reserved_bit(fileNames[index]))
+
+    recovered_blocks = image_sharing.reconstruct_image(shadows, shadowNumbers)
+    exit(0)
+    #test
+
     # apply LSB of each shadow to a cover file
     for index, s in enumerate(shadows):
         shadow_simplified = " ".join([bin(value)[2:].zfill(8) for tuple_ in s for value in tuple_])

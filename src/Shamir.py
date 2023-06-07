@@ -77,7 +77,7 @@ class Shamir:
         f_coeffs = []
         g_coeffs = []
         for i in range(len(M)):
-            f_coeffs[i] = lagrange(M[i])
+            f_coeffs[i] = lagrange( (shadowNumbers[i], M[i]) )
         for i in range(len(D)):
             g_coeffs[i] = lagrange(D[i])
 
