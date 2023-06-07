@@ -37,8 +37,8 @@ class Shamir:
             f.append(a)
 
             b = []
-            ri = randint(1, 250) # != 0 y != 251
-            #ri = 77
+            # ri = randint(1, 250) # != 0 y != 251
+            ri = 77
 
             b0 =  (- ri * a[0] ) % MOD
             if b0 != 0 and b0 != 251:
@@ -72,28 +72,52 @@ class Shamir:
         # s2 = [(m12, d12), (m22, d22), (m32, d32), (m42, d42)]
         M = [ [shadow[i][0] for shadow in shadows] for i in range(len(shadows[0])) ]
         D = [ [shadow[i][1] for shadow in shadows] for i in range(len(shadows[0])) ]
+        
+        polypoints_M = []
+        polypoints_D = []
+        for i in range(len(M)):
+            points = []
+            for j in range(len(M[0])):
+                points.append([shadowNumbers[j], M[i][j]])
+            polypoints_M.append(points)
 
+        for i in range(len(D)):
+            points = []
+            for j in range(len(D[0])):
+                points.append([shadowNumbers[j], D[i][j]])
+            polypoints_D.append(points)
 
         f_coeffs = []
         g_coeffs = []
-        for i in range(len(M)):
-            f_coeffs[i] = lagrange( (shadowNumbers[i], M[i]) )
-        for i in range(len(D)):
-            g_coeffs[i] = lagrange(D[i])
+        for i, element in enumerate(polypoints_M):
+            f_coeffs.append(lagrange(element))
+        for i, element in enumerate(polypoints_D):
+            g_coeffs.append(lagrange(element))
 
+        print("f_coeffs")
+        print(f_coeffs)
+        print("g_coeffs")
+        print(g_coeffs)
         for ri in range(1, 250):
-            found = True
-            for i in range(len(M)):
-                equation_1 = ri * f_coeffs[i][0] + g_coeffs[i][0]
-                equation_2 = ri * f_coeffs[i][1] + g_coeffs[i][1]
+            validated = True
+            for i in range(len(f_coeffs)):
+                equation_1 = (ri * f_coeffs[i][0] + g_coeffs[i][0]) % MOD
+                equation_2 = (ri * f_coeffs[i][1] + g_coeffs[i][1]) % MOD
 
                 if equation_1 != 0 or equation_2 != 0:
-                    found = False
+                    validated = False
                     break
-        if not found:
-            return -1
+            break
+        if not validated:
+            print("NOT FOUND")
+            exit(1)
 
-
+        recovered = []
+        for index, element in enumerate(g_coeffs):
+            g_coeffs[index] = g_coeffs[index][2:]
+        for i, element in enumerate(f_coeffs):
+            #TODO: arreglar de sacar los ultimos 0, no todos
+            print(list(filter(lambda x: x != 0, f_coeffs[i] + g_coeffs[i])))
         recovered = []
         for i in range(len(shadows)):
             block = f_coeffs[i][:-1] + g_coeffs[2:]

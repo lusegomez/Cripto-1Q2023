@@ -50,7 +50,8 @@ image_sharing = Shamir(k, n)
 if distribute_or_recovery == "d":
     image = Image.open(image_file)
     np_image = np.array(image)
-
+    print("np_image")
+    print(np_image)
     #generate Shadows
     shadows = image_sharing.generate_shadows(np_image)
 

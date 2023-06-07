@@ -49,5 +49,5 @@ def calculate_new_polypoints(polypoints, s_n):
     return new_polypoints
 
 
-initial_polypoints = [[1, 3], [5, 10], [2, 9]]
-print(lagrange(initial_polypoints))
+# initial_polypoints = [[1, 3], [5, 10], [2, 9]]
+# print(lagrange(initial_polypoints))
