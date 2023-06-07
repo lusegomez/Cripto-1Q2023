@@ -40,6 +40,7 @@ def lagrange(polypoints):
 
 
 def calculate_new_polypoints(polypoints, s_n):
+    # print(polypoints)
     polypoints.pop()  # Discard one point
     new_polypoints = []
     while len(polypoints) > 0:

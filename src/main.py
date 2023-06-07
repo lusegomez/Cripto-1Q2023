@@ -50,32 +50,8 @@ image_sharing = Shamir(k, n)
 if distribute_or_recovery == "d":
     image = Image.open(image_file)
     np_image = np.array(image)
-    print("np_image")
-    print(np_image)
     #generate Shadows
     shadows = image_sharing.generate_shadows(np_image)
-
-    #test
-    # shadowNumbers = [[1,1,1,1,1],[2,2,2,2,2],[3],4,5]
-    shadowNumbers = [1,2,3,4,5]
-    # for index, carrier in enumerate(carriers_data):
-    #     shadow = recover_shadow(carrier, LSB, width, height, k)
-    #     shadows.append(shadow)
-    #     shadowNumbers.append(read_reserved_bit(fileNames[index]))
-
-    recovered_blocks = image_sharing.reconstruct_image(shadows, shadowNumbers)
-    recovered_secret = Image.new("L", (width, height))
-    secret_data = recovered_secret.load()
-    recovered_blocks = np.array(recovered_blocks).flatten()
-    recovered_blocks = np.resize(recovered_blocks, (500, 500))
-    for i in range(height):
-        for j in range(width):
-            # print(recovered_blocks[j][i])
-            secret_data[j, i] = int(recovered_blocks[i][j])
-    recovered_secret.save("magicYoda.bmp")
-
-    exit(0)
-    #test
 
     # apply LSB of each shadow to a cover file
     for index, s in enumerate(shadows):
@@ -86,44 +62,25 @@ if distribute_or_recovery == "d":
     exit(0)
 
 elif distribute_or_recovery == "r":
-    # recovered_secret = Image.new("L", (width, height))
+    recovered_secret = Image.new("L", (width, height))
+    secret_data = recovered_secret.load()
+
     shadows = []
     shadowNumbers = []
-    #todo reordenar carriers_data teniendo en cuenta el special byte
+
     for index, carrier in enumerate(carriers_data):
         shadow = recover_shadow(carrier, LSB, width, height, k)
         shadows.append(shadow)
-        shadowNumbers.append(read_reserved_bit(fileNames[index]))
+        shadowNumbers.append(read_reserved_bit(f"{output_dir}/{fileNames[index]}"))
+
 
     recovered_blocks = image_sharing.reconstruct_image(shadows, shadowNumbers)
+    recovered_blocks = np.array(recovered_blocks).flatten()
+    recovered_blocks = np.resize(recovered_blocks, (height, width))
+    for i in range(height):
+        for j in range(width):
+            # print(recovered_blocks[j][i])
+            secret_data[j, i] = int(recovered_blocks[i][j])
+    recovered_secret.save(f"{output_dir}/output/{image_file}")
 
-    # recovered_secret.save(f"{output_dir}/{image_file}")
-
-
-
-
-
-#
-# #image = np.array(
-# #     [[5,4, 9], [10, 9, 2], [8, 5, 1], [5,2,1]]
-# #)
-#
-# image = Image.open("./yoda.bmp")
-# np_image = np.array(image)
-#
-#
-# image_sharing = Shamir(3, 4)
-#
-# shadows = image_sharing.generate_shadows(np_image)
-#
-#
-# #sub = [shadows[0], shadows[2], shadows[1]]
-# #print(shadows[0])
-
-
-
-#reconstructed = image_sharing.reconstruct_image(sub)
-
-#print(shadows)
-
-#print(reconstructed)
+exit(0)

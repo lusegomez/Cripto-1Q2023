@@ -62,7 +62,7 @@ def recover_shadow(carrier, LSB, width, height, k):
                     shadowBuffer = ""
                     bufferOccupiedSize = 0
                     if len(shadow) == tuples_to_read:
-                        print(f"\ndone writing shadow\nstopped in:\ncarrier pos x{x} y{y}")
+                        print(f"\ndone recovering shadow\nstopped in:\ncarrier pos x{x} y{y}")
                         return shadow
 
                     if shadowX < width-1:

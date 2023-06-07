@@ -1,7 +1,2 @@
 makefile
 readme
-
-adding number in header
-
-recover image from shadows
-do inverse lsb
