@@ -23,7 +23,7 @@ def calculate_s_n(polypoints):
                 lagrange_i *= (-x_j * inverses[(x_i - x_j) % MOD])
                 lagrange_i = lagrange_i % MOD
         lagrange_poly_k += lagrange_i * polypoints[i][1]
-        
+
     return lagrange_poly_k % MOD
 
 

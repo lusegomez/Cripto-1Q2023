@@ -95,10 +95,10 @@ class Shamir:
             g_coeffs.append(lagrange(element))
 
 
-        print("f_coeffs")
-        print(f_coeffs)
-        print("g_coeffs")
-        print(g_coeffs)
+        # print("f_coeffs")
+        # print(f_coeffs)
+        # print("g_coeffs")
+        # print(g_coeffs)
         validated = False
         for r in range(1, 250):
             if validated:
@@ -114,50 +114,19 @@ class Shamir:
                     validated = True
 
         if not validated:
-            print("NOT FOUND")
+            print("Error, one of the Shadows was cheated")
             exit(1)
 
         recovered = []
-        for index, element in enumerate(g_coeffs):
-            g_coeffs[index] = g_coeffs[index][2:]
+
+        #remove trailing 0s
         for i, element in enumerate(f_coeffs):
-            #TODO: arreglar de sacar los ultimos 0, no todos
-            print(list(filter(lambda x: x != 0, f_coeffs[i] + g_coeffs[i])))
-        # recovered = []
-        # for i in range(len(shadows)):
-        #     block = f_coeffs[i][:-1] + g_coeffs[2:]
-        #     recovered.append(block)
-        # return np.concatenate(recovered)
+            f = f_coeffs[i][:self.k]
+            g = g_coeffs[i][:self.k]
+            g = g[2:]
+            recovered.append(f + g)
 
-
-        # j = len(shadows)        
-        # t = len(shadows[0])
-        # #Extract tup from shadows
-        # extracted_shadows = np.zeros(t, j, 2)
-
-        # for i in range(j):
-        #     for k in range(t):
-        #         mi, di = shadows[i][k]
-        #         extracted_shadows[k][i] = [mi, di]
-        # print(extracted_shadows)
-
-        # num_blocks = len(shadows)
-        # if num_blocks < self.k:
-        #     print("error in num blocks, need at least K to decipher")
-        #     exit(1)
-        # block_size = len(shadows[0])
-        # reconstructed = np.array([])
-        # shares = [[] for _ in range(block_size)]
-        # for s, share in enumerate(shares):
-        #     for o in range(self.k):
-        #         share.append(shadows[o][s])
-        # coefs = []
-        # # Extract v1j, v2j, ..., vmj from S1, S2, ..., Sm (where Si is the i-th shadow)
-        # for j in range(block_size):
-        #     t = np.transpose(shares[j])
-        #     coefs.append(self.__gauss_polynomial(t[0], t[1])) #[i for i in range(1, num_blocks + 1)]
-
-        # return coefs
+        return recovered
 
      ###############################################
 

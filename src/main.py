@@ -64,6 +64,16 @@ if distribute_or_recovery == "d":
     #     shadowNumbers.append(read_reserved_bit(fileNames[index]))
 
     recovered_blocks = image_sharing.reconstruct_image(shadows, shadowNumbers)
+    recovered_secret = Image.new("L", (width, height))
+    secret_data = recovered_secret.load()
+    recovered_blocks = np.array(recovered_blocks).flatten()
+    recovered_blocks = np.resize(recovered_blocks, (500, 500))
+    for i in range(height):
+        for j in range(width):
+            # print(recovered_blocks[j][i])
+            secret_data[j, i] = int(recovered_blocks[i][j])
+    recovered_secret.save("magicYoda.bmp")
+
     exit(0)
     #test
 
