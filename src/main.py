@@ -8,6 +8,7 @@ distribute_or_recovery, image_file, k, output_dir = verify_params()
 
 # open files
 carriers = []
+fileNames = []
 n=0
 for filename in os.listdir(output_dir):
     if os.path.isfile(os.path.join(output_dir, filename)):
@@ -15,6 +16,7 @@ for filename in os.listdir(output_dir):
             image = f"{output_dir}/{filename}"
             # carrier = Image.open(image)
             carriers.append(Image.open(image))
+            fileNames.append(filename)
             n += 1
 
 if len(carriers) < 1:
@@ -42,13 +44,16 @@ else:
 
 
 #START
+#create Shamir object
+image_sharing = Shamir(k, n)
+
 if distribute_or_recovery == "d":
     image = Image.open(image_file)
     np_image = np.array(image)
-    #create Shamir object
-    image_sharing = Shamir(k, n)
+
     #generate Shadows
     shadows = image_sharing.generate_shadows(np_image)
+
     # apply LSB of each shadow to a cover file
     for index, s in enumerate(shadows):
         shadow_simplified = " ".join([bin(value)[2:].zfill(8) for tuple_ in s for value in tuple_])
@@ -59,14 +64,19 @@ if distribute_or_recovery == "d":
 
 elif distribute_or_recovery == "r":
     # recovered_secret = Image.new("L", (width, height))
-
+    shadows = []
+    shadowNumbers = []
     #todo reordenar carriers_data teniendo en cuenta el special byte
     for index, carrier in enumerate(carriers_data):
         shadow = recover_shadow(carrier, LSB, width, height, k)
+        shadows.append(shadow)
+        shadowNumbers.append(read_reserved_bit(fileNames[index]))
+
+    recovered_blocks = image_sharing.reconstruct_image(shadows, shadowNumbers)
 
     # recovered_secret.save(f"{output_dir}/{image_file}")
-    image_sharing = Shamir(k, n)
-    recovered_blocks = image_sharing.reconstruct_image(shadow)
+
+
 
 
 

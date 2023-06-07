@@ -66,12 +66,13 @@ class Shamir:
         return shadows
 
 
-    def reconstruct_image(self, shadows):
+    def reconstruct_image(self, shadows, shadowNumbers):
         #Ejemplo de shadows
         # s1 = [(m11, d11), (m21, d21), (m31, d31), (m41, d41)]
         # s2 = [(m12, d12), (m22, d22), (m32, d32), (m42, d42)]
         M = [ [shadow[i][0] for shadow in shadows] for i in range(len(shadows[0])) ]
         D = [ [shadow[i][1] for shadow in shadows] for i in range(len(shadows[0])) ]
+
 
         f_coeffs = []
         g_coeffs = []
