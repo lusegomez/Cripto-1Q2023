@@ -9,6 +9,7 @@ def apply_shadow(shadow, carrierData, copy, index, LSB, height, width):
     for y in range(height):
         for x in range(width): ##iterate whole carrier
             pixel_bits = int_to_bits(carrierData[x,y])
+
             patch = ""
             if LSB == 4:
                 patch = f"{shadow[shadowPosition]}{shadow[shadowPosition+1]}{shadow[shadowPosition+2]}{shadow[shadowPosition+3]}"
@@ -37,28 +38,51 @@ def recover_shadow(carrier, LSB, width, height, k):
         exit(1)
     tuples_to_read = (width * height) / (2*k-2)
 
+    cant_numbers = tuples_to_read * 2
+    cant_bytes_needed = cant_numbers * (6-LSB)
+    total = width * height
+    total_offset = total - cant_bytes_needed
+    x_offset = int(total_offset % width)
+    y_offset = int(total_offset // width)
+
+    x_offset -= 100
+    y_offset -= 0
+
     shadowX, shadowY = 0,0
     shadow = []
     shadowBuffer = ""
     bufferOccupiedSize = 0
     tupleBuffer = None
-    for y in range(height):
-        for x in range(width): ##iterate whole carrier
+    # a_i = []
+    # a_i_index = 0
+    for y in range(y_offset, height):
+        for x in range(x_offset, width): ##iterate whole carrier
             pixel_bits = int_to_bits(carrier[x, y])
+            # pixel_bits = int_to_bits(carrier[y, x])
+
             fragment = f"{pixel_bits[-LSB:]}"
 
             if shadowBuffer == "":
                 shadowBuffer = fragment #+ '0' * (8-LSB)
                 bufferOccupiedSize += LSB
             else:
-                shadowBuffer = shadowBuffer[:bufferOccupiedSize] + fragment #+ '0' * (8-bufferOccupiedSize-LSB)
+                shadowBuffer = shadowBuffer[:bufferOccupiedSize] + fragment
+                # shadowBuffer = fragment + shadowBuffer[:bufferOccupiedSize]
+
                 bufferOccupiedSize += LSB
                 if bufferOccupiedSize == 8:
+                    # if len(a_i) < tuples_to_read:
+                    #     a_i.append(bits_to_int(shadowBuffer))
+                    # else:
+                    #     shadow.append((a_i[a_i_index] , bits_to_int(shadowBuffer)))
+                    #     a_i_index += 1
+                    #
                     if tupleBuffer is None:
                         tupleBuffer = bits_to_int(shadowBuffer)
                     else:
-                        shadow.append((tupleBuffer, bits_to_int(shadowBuffer)))
+                        shadow.append([tupleBuffer, bits_to_int(shadowBuffer)])
                         tupleBuffer = None
+                    #
                     shadowBuffer = ""
                     bufferOccupiedSize = 0
                     if len(shadow) == tuples_to_read:
@@ -74,117 +98,8 @@ def recover_shadow(carrier, LSB, width, height, k):
                         else:
                             # print(f"done writing shadow\nstopped in:\ncarrier pos x{x} y{y}")
                             # return shadow
-                            print("Error, image too small to contain shadow")
+                            print("Error, image too small to contain full shadow")
                             exit(1)
+        x_offset=0
     print("Error, image too small to contain shadow")
     exit(1)
-
-
-# original, when it was applying a bmp to other n bmps:
-# def recover_shadow(shadow, carriers, LSB, width, height):
-#     shadowX, shadowY = 0,0
-#     shadowBuffer = ""
-#     bufferOccupiedSize = 0
-#     for i in range(len(carriers)):     ##iterate through carriers
-#         for y in range(height):
-#             for x in range(width): ##iterate whole carrier
-#                 pixel_bits = int_to_bits(carriers[i][x, y])
-#                 fragment = f"{pixel_bits[-LSB:]}"
-#
-#                 if shadowBuffer == "":
-#                     shadowBuffer = fragment #+ '0' * (8-LSB)
-#                     bufferOccupiedSize += LSB
-#                 else:
-#                     shadowBuffer = shadowBuffer[:bufferOccupiedSize] + fragment #+ '0' * (8-bufferOccupiedSize-LSB)
-#                     bufferOccupiedSize += LSB
-#                     if bufferOccupiedSize == 8:
-#                         shadow[shadowX, shadowY] = bits_to_int(shadowBuffer)
-#                         shadowBuffer = ""
-#                         bufferOccupiedSize = 0
-#                         if shadowX < width-1:
-#                             shadowX += 1
-#                         else:
-#                             if shadowY < height-1:
-#                                 shadowX = 0
-#                                 shadowY += 1
-#                             else:
-#                                 print(f"done writing shadow\nstopped in:\ncarrier {i}\ncarrier pos x{x} y{y}")
-#                                 return
-
-#old stuff:
-
-## execution
-
-
-'''
-if distribute_or_recovery == "d":
-    carrier1 = Image.open(output_dir + "/1cat.bmp")
-    carrier2 = Image.open(output_dir + "/2penguin.bmp")
-    carrier3 = Image.open(output_dir + "/3sunflower.bmp")
-    carrier4 = Image.open(output_dir + "/4dog.bmp")
-    carrier5 = Image.open(output_dir + "/5kangaroo.bmp")
-elif distribute_or_recovery == "r":
-    carrier1 = Image.open(output_dir + "/edited_cat.bmp")
-    carrier2 = Image.open(output_dir + "/edited_penguin.bmp")
-    carrier3 = Image.open(output_dir + "/edited_sunflower.bmp")
-    carrier4 = Image.open(output_dir + "/edited_dog.bmp")
-    carrier5 = Image.open(output_dir + "/edited_kangaroo.bmp")
-else:
-    carrier1 = None
-    carrier2 = None
-    carrier3 = None
-    carrier4 = None
-    carrier5 = None
-    exit(1)
-'''
-'''
-# copy to allow modify of files
-width, height = carrier1.size
-carrier1Copy = carrier1.copy()
-carrier2Copy = carrier2.copy()
-carrier3Copy = carrier3.copy()
-carrier4Copy = carrier4.copy()
-carrier5Copy = carrier5.copy()
-
-carrier1PixelData = carrier1Copy.load()
-carrier2PixelData = carrier2Copy.load()
-carrier3PixelData = carrier3Copy.load()
-carrier4PixelData = carrier4Copy.load()
-carrier5PixelData = carrier5Copy.load()
-
-carriers_data = [carrier1PixelData, carrier2PixelData, carrier3PixelData, carrier4PixelData, carrier5PixelData]
-'''
-### done preparing data
-'''
-LSB = None
-if k in [3, 4]:
-    LSB = 4
-elif k in [5, 6, 7, 8]:
-    LSB = 2
-else:
-    print("Error deciding which LSB to use")
-    exit(1)
-'''
-
-'''
-if distribute_or_recovery == "d":
-    ### set data
-    image = Image.open("./yoda.bmp")
-    np_image = np.array(image)
-    image_sharing = Shamir(3, 4)
-    shadows = image_sharing.generate_shadows(np_image)
-
-    #shadow = Image.open(image_file)
-    shadow = shadows[0]
-    binary_data = shadow.tobytes()
-    shadowBinaryString = ' '.join(format(byte, '08b') for byte in binary_data)
-
-    apply_shadow(shadowBinaryString, carriers_data, LSB)
-
-    exit(0)
-elif distribute_or_recovery == "r":
-    recovered_shadow = Image.new("L", (width, height))
-
-    recover_shadow(recovered_shadow.load(), carriers_data, LSB)
-    recovered_shadow.save(output_dir + "/recovered_shadow.bmp")
-'''

@@ -73,6 +73,16 @@ class Shamir:
         #Ejemplo de shadows
         # s1 = [(m11, d11), (m21, d21), (m31, d31), (m41, d41)]
         # s2 = [(m12, d12), (m22, d22), (m32, d32), (m42, d42)]
+
+        # M = []
+        # D = []
+        # for shadow in shadows:
+        #     M.append([])
+        #     D.append([])
+        #     for i in range(len(shadows[0])):
+        #         M[i].append(shadow[i][0])
+        #         D[i].append(shadow[i][1])
+
         M = [ [shadow[i][0] for shadow in shadows] for i in range(len(shadows[0])) ]
         D = [ [shadow[i][1] for shadow in shadows] for i in range(len(shadows[0])) ]
         
@@ -122,12 +132,15 @@ class Shamir:
 
         recovered = []
 
+
         #remove trailing 0s
         for i, element in enumerate(f_coeffs):
             f = f_coeffs[i][:self.k]
+            # f = f[2:]
             g = g_coeffs[i][:self.k]
             g = g[2:]
-            recovered.append(f + g)
+            B = f + g
+            recovered.append(B)
 
         return recovered
 

@@ -81,6 +81,9 @@ elif distribute_or_recovery == "r":
         for j in range(width):
             # print(recovered_blocks[j][i])
             secret_data[j, i] = int(recovered_blocks[i][j])
+    # secret_data[0, 0] = 0
+    # secret_data[299, 0] = 0
+    # secret_data[299, 299] = 0
     recovered_secret.save(f"{output_dir}/output/{image_file}")
 
 exit(0)

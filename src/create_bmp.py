@@ -1,11 +1,11 @@
 import pandas as pd
 from PIL import Image
-SIZE = (500,500)
+SIZE = (140,140)
 
-image = Image.open("7carpincho.jpeg")
+image = Image.open("./images/og/140x140/zebra.jpg")
 image = image.resize(SIZE)
 image = image.convert("L")
 
-image.save("7carpincho.bmp")
+image.save("./images/og/140x140/8zebra.bmp")
 
-image.show()
+# image.show()
