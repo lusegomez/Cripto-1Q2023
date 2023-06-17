@@ -113,20 +113,37 @@ class Shamir:
         # print("g_coeffs")
         # print(g_coeffs)
         validated = False
-        for r in range(1, 250):
-            if validated:
-                break
-            for i in range(len(f_coeffs)):
+        # for r in range(1, 250):
+        #     if validated:
+        #         break
+        #     for i in range(len(f_coeffs)):
+        #         equation_1 = (r * f_coeffs[i][0] + g_coeffs[i][0]) % MOD
+        #         equation_2 = (r * f_coeffs[i][1] + g_coeffs[i][1]) % MOD
+        #
+        #         if equation_1 != 0 or equation_2 != 0:
+        #             validated = False
+        #             break
+        #         else:
+        #             validated = True
+        #             break
+        valid_block = False
+        all_valid = True
+        for i in range(len(f_coeffs)):
+            for r in range(1, 251):
                 equation_1 = (r * f_coeffs[i][0] + g_coeffs[i][0]) % MOD
                 equation_2 = (r * f_coeffs[i][1] + g_coeffs[i][1]) % MOD
 
                 if equation_1 != 0 or equation_2 != 0:
-                    validated = False
-                    break
+                    valid_block = False
                 else:
-                    validated = True
-
-        if not validated:
+                    valid_block = True
+                    break
+            if not valid_block:
+                all_valid = False
+                break
+            else:
+                valid_block = False  # Reset el flag
+        if not all_valid:
             print("Error, one of the Shadows was cheated")
             # exit(1)
 
