@@ -1,12 +1,20 @@
 from lib import *
 
-#distribute_or_recovery, image_file, k, output_dir = verify_params()
-
-def apply_shadow(shadow, carrierData, copy, index, LSB, height, width):
+def apply_shadow(shadow, carrierData, copy, index, LSB, height, width, k):
     shadowPosition = 0
-    # a = len(shadow)
-    # print(a)
-    for y in range(height):
+
+    tuples_to_read = (width * height) / (2*k-2)
+
+    cant_numbers = tuples_to_read * 2
+    cant_bytes_needed = cant_numbers * (6-LSB) #6-4=2 , 6-2=4 -> LSB2 needs 4bytes, LSB4 needs 2bytes
+    total = width * height
+    total_offset = total - cant_bytes_needed
+    x_offset = int(total_offset % width)
+    y_offset = int(total_offset // width)
+    # x_offset += 4
+    y_offset += 0
+
+    for y in range(y_offset, height):
         for x in range(width): ##iterate whole carrier
             pixel_bits = int_to_bits(carrierData[x,y])
 
@@ -39,14 +47,16 @@ def recover_shadow(carrier, LSB, width, height, k):
     tuples_to_read = (width * height) / (2*k-2)
 
     cant_numbers = tuples_to_read * 2
-    cant_bytes_needed = cant_numbers * (6-LSB)
+    cant_bytes_needed = cant_numbers * (6-LSB) #6-4=2 , 6-2=4 -> LSB2 needs 4bytes, LSB4 needs 2bytes
     total = width * height
     total_offset = total - cant_bytes_needed
     x_offset = int(total_offset % width)
     y_offset = int(total_offset // width)
 
-    x_offset -= 100
-    y_offset -= 0
+    # x_offset += 4
+    y_offset += 0
+    # x_offset = 0
+    # y_offset = 100
 
     shadowX, shadowY = 0,0
     shadow = []
@@ -58,25 +68,17 @@ def recover_shadow(carrier, LSB, width, height, k):
     for y in range(y_offset, height):
         for x in range(x_offset, width): ##iterate whole carrier
             pixel_bits = int_to_bits(carrier[x, y])
-            # pixel_bits = int_to_bits(carrier[y, x])
 
             fragment = f"{pixel_bits[-LSB:]}"
 
             if shadowBuffer == "":
-                shadowBuffer = fragment #+ '0' * (8-LSB)
+                shadowBuffer = fragment
                 bufferOccupiedSize += LSB
             else:
                 shadowBuffer = shadowBuffer[:bufferOccupiedSize] + fragment
-                # shadowBuffer = fragment + shadowBuffer[:bufferOccupiedSize]
 
                 bufferOccupiedSize += LSB
                 if bufferOccupiedSize == 8:
-                    # if len(a_i) < tuples_to_read:
-                    #     a_i.append(bits_to_int(shadowBuffer))
-                    # else:
-                    #     shadow.append((a_i[a_i_index] , bits_to_int(shadowBuffer)))
-                    #     a_i_index += 1
-                    #
                     if tupleBuffer is None:
                         tupleBuffer = bits_to_int(shadowBuffer)
                     else:
@@ -89,17 +91,18 @@ def recover_shadow(carrier, LSB, width, height, k):
                         print(f"\ndone recovering shadow\nstopped in:\ncarrier pos x{x} y{y}")
                         return shadow
 
-                    if shadowX < width-1:
-                        shadowX += 1
-                    else:
-                        if shadowY < height-1:
-                            shadowX = 0
-                            shadowY += 1
-                        else:
-                            # print(f"done writing shadow\nstopped in:\ncarrier pos x{x} y{y}")
-                            # return shadow
-                            print("Error, image too small to contain full shadow")
-                            exit(1)
+                    # if shadowX < width-1:
+                    #     shadowX += 1
+                    # else:
+                    #     if shadowY < height-1:
+                    #         shadowX = 0
+                    #         shadowY += 1
+                    #     else:
+                    #         # print(f"done writing shadow\nstopped in:\ncarrier pos x{x} y{y}")
+                    #         # return shadow
+                    #         print("Error, image too small to contain full shadow")
+                    #         exit(1)
         x_offset=0
     print("Error, image too small to contain shadow")
-    exit(1)
+    return shadow
+    # exit(1)

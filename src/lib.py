@@ -91,12 +91,3 @@ def read_reserved_bit(image_file):
     # print('Reserved 2: %s' % struct.unpack('H', bmp.read(2)))
     # print('Offset: %s' % struct.unpack('I', bmp.read(4)))
     return int.from_bytes(bmp.read(2), byteorder='little')
-
-'''
-bmp = open(image_file, 'rb')
-print('Type:', bmp.read(2).decode())
-print('Size: %s' % struct.unpack('I', bmp.read(4)))
-print('Reserved 1: %s' % struct.unpack('H', bmp.read(2)))
-print('Reserved 2: %s' % struct.unpack('H', bmp.read(2)))
-print('Offset: %s' % struct.unpack('I', bmp.read(4)))
-'''
