@@ -22,7 +22,7 @@ class Shamir:
         t = 2 * self.k - 2
         # divide the image into t non-overlapping 2k-2 pixels blocks (B1, B2, ..., Bl)
         if len(flat) % t != 0:
-            print("error in image size, not divisible by 2k-2")
+            print("error in secret image size, not divisible by 2k-2")
             exit(1)
         blocks = np.array_split(flat, len(flat) / t)
         f = []
@@ -40,8 +40,8 @@ class Shamir:
             f.append(a)
 
             b = []
-            # ri = randint(1, 250) # != 0 y != 251
-            ri = 3
+            ri = randint(1, 250) # != 0 y != 251
+            # ri = 3
 
             b0 =  (- ri * a[0] ) % MOD
             if b0 != 0 and b0 != 251:
@@ -74,14 +74,6 @@ class Shamir:
         # s1 = [(m11, d11), (m21, d21), (m31, d31), (m41, d41)]
         # s2 = [(m12, d12), (m22, d22), (m32, d32), (m42, d42)]
 
-        # M = []
-        # D = []
-        # for shadow in shadows:
-        #     M.append([])
-        #     D.append([])
-        #     for i in range(len(shadows[0])):
-        #         M[i].append(shadow[i][0])
-        #         D[i].append(shadow[i][1])
 
         M = [ [shadow[i][0] for shadow in shadows] for i in range(len(shadows[0])) ]
         D = [ [shadow[i][1] for shadow in shadows] for i in range(len(shadows[0])) ]
@@ -108,27 +100,27 @@ class Shamir:
             g_coeffs.append(lagrange(element))
 
 
-        # print("f_coeffs")
-        # print(f_coeffs)
-        # print("g_coeffs")
-        # print(g_coeffs)
-        validated = False
-        for r in range(1, 250):
-            if validated:
-                break
-            for i in range(len(f_coeffs)):
+        valid_block = False
+        all_valid = True
+        for i in range(len(f_coeffs)):
+            for r in range(1, 251):
                 equation_1 = (r * f_coeffs[i][0] + g_coeffs[i][0]) % MOD
                 equation_2 = (r * f_coeffs[i][1] + g_coeffs[i][1]) % MOD
 
                 if equation_1 != 0 or equation_2 != 0:
-                    validated = False
-                    break
+                    valid_block = False
                 else:
-                    validated = True
-
-        if not validated:
+                    valid_block = True
+                    break
+            if not valid_block:
+                all_valid = False
+                break
+            else:
+                valid_block = False  # Reset el flag
+        if not all_valid:
             print("Error, one of the Shadows was cheated")
             # exit(1)
+
 
         recovered = []
 
@@ -136,7 +128,6 @@ class Shamir:
         #remove trailing 0s
         for i, element in enumerate(f_coeffs):
             f = f_coeffs[i][:self.k]
-            # f = f[2:]
             g = g_coeffs[i][:self.k]
             g = g[2:]
             B = f + g

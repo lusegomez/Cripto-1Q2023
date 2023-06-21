@@ -14,7 +14,6 @@ for filename in os.listdir(output_dir):
     if os.path.isfile(os.path.join(output_dir, filename)):
         if filename.endswith(".bmp"):
             image = f"{output_dir}/{filename}"
-            # carrier = Image.open(image)
             carriers.append(Image.open(image))
             fileNames.append(filename)
             n += 1
@@ -56,7 +55,7 @@ if distribute_or_recovery == "d":
     # apply LSB of each shadow to a cover file
     for index, s in enumerate(shadows):
         shadow_simplified = " ".join([bin(value)[2:].zfill(8) for tuple_ in s for value in tuple_])
-        apply_shadow(shadow_simplified, carriers_data[index], copies[index], index, LSB, height, width)
+        apply_shadow(shadow_simplified, carriers_data[index], copies[index], index, LSB, height, width, k)
 
     print("done")
     exit(0)
@@ -77,13 +76,11 @@ elif distribute_or_recovery == "r":
     recovered_blocks = image_sharing.reconstruct_image(shadows, shadowNumbers)
     recovered_blocks = np.array(recovered_blocks).flatten()
     recovered_blocks = np.resize(recovered_blocks, (height, width))
+
     for i in range(height):
         for j in range(width):
-            # print(recovered_blocks[j][i])
             secret_data[j, i] = int(recovered_blocks[i][j])
-    # secret_data[0, 0] = 0
-    # secret_data[299, 0] = 0
-    # secret_data[299, 299] = 0
+
     recovered_secret.save(f"{output_dir}/output/{image_file}")
 
 exit(0)
