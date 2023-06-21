@@ -40,20 +40,20 @@ def apply_shadow(shadow, carrierData, copy, index, LSB, height, width, k):
     exit(1)
 
 
-def recover_shadow(carrier, LSB, width, height, k):
+def recover_shadow(carrier, LSB, width, height, k, carrier_byte_array):
     if (width * height) % (2*k-2) != 0:
         print("Error, wrong K for this image size")
         exit(1)
     tuples_to_read = (width * height) / (2*k-2)
 
     cant_numbers = tuples_to_read * 2
-    cant_bytes_needed = cant_numbers * (6-LSB) #6-4=2 , 6-2=4 -> LSB2 needs 4bytes, LSB4 needs 2bytes
+    cant_bytes_needed = cant_numbers * (6-LSB)  # 6-4=2 , 6-2=4 -> LSB2 needs 4bytes, LSB4 needs 2bytes
     total = width * height
     total_offset = total - cant_bytes_needed
     x_offset = int(total_offset % width)
     y_offset = int(total_offset // width)
 
-    # x_offset += 4
+    x_offset -= 164
     y_offset += 0
     # x_offset = 0
     # y_offset = 100
@@ -65,44 +65,45 @@ def recover_shadow(carrier, LSB, width, height, k):
     tupleBuffer = None
     # a_i = []
     # a_i_index = 0
-    for y in range(y_offset, height):
-        for x in range(x_offset, width): ##iterate whole carrier
-            pixel_bits = int_to_bits(carrier[x, y])
 
-            fragment = f"{pixel_bits[-LSB:]}"
+    print(carrier_byte_array[:10])
+    for x in range(int(total_offset - 4), int(width * height)):  ## iterate whole carrier
+        byte = carrier_byte_array[x]
+        pixel_bits = int_to_bits(byte)
 
-            if shadowBuffer == "":
-                shadowBuffer = fragment
-                bufferOccupiedSize += LSB
-            else:
-                shadowBuffer = shadowBuffer[:bufferOccupiedSize] + fragment
+        fragment = f"{pixel_bits[-LSB:]}"
 
-                bufferOccupiedSize += LSB
-                if bufferOccupiedSize == 8:
-                    if tupleBuffer is None:
-                        tupleBuffer = bits_to_int(shadowBuffer)
-                    else:
-                        shadow.append([tupleBuffer, bits_to_int(shadowBuffer)])
-                        tupleBuffer = None
-                    #
-                    shadowBuffer = ""
-                    bufferOccupiedSize = 0
-                    if len(shadow) == tuples_to_read:
-                        print(f"\ndone recovering shadow\nstopped in:\ncarrier pos x{x} y{y}")
-                        return shadow
+        if shadowBuffer == "":
+            shadowBuffer = fragment
+            bufferOccupiedSize += LSB
+        else:
+            shadowBuffer = shadowBuffer[:bufferOccupiedSize] + fragment
 
-                    # if shadowX < width-1:
-                    #     shadowX += 1
-                    # else:
-                    #     if shadowY < height-1:
-                    #         shadowX = 0
-                    #         shadowY += 1
-                    #     else:
-                    #         # print(f"done writing shadow\nstopped in:\ncarrier pos x{x} y{y}")
-                    #         # return shadow
-                    #         print("Error, image too small to contain full shadow")
-                    #         exit(1)
-        x_offset=0
+            bufferOccupiedSize += LSB
+            if bufferOccupiedSize == 8:
+                if tupleBuffer is None:
+                    tupleBuffer = bits_to_int(shadowBuffer)
+                else:
+                    shadow.append([tupleBuffer, bits_to_int(shadowBuffer)])
+                    tupleBuffer = None
+                #
+                shadowBuffer = ""
+                bufferOccupiedSize = 0
+                if len(shadow) == tuples_to_read:
+                    print(f"\ndone recovering shadow\nstopped in:\ncarrier pos x{x}")
+                    return shadow
+
+                # if shadowX < width-1:
+                #     shadowX += 1
+                # else:
+                #     if shadowY < height-1:
+                #         shadowX = 0
+                #         shadowY += 1
+                #     else:
+                #         # print(f"done writing shadow\nstopped in:\ncarrier pos x{x} y{y}")
+                #         # return shadow
+                #         print("Error, image too small to contain full shadow")
+                #         exit(1)
     print("Error, image too small to contain shadow")
     return shadow
     # exit(1)

@@ -1,3 +1,5 @@
+import io
+
 from Shamir import Shamir
 from lib import *
 from lsb import apply_shadow, recover_shadow
@@ -25,10 +27,13 @@ if len(carriers) < 1:
 #shallow copy to allow modification of files
 width, height = carriers[0].size
 carriers_data = []
+carriers_byte_arrays = []
 copies = []
 for c in carriers:
     copies.append(c.copy())
     carriers_data.append(copies[-1].load())
+
+    carriers_byte_arrays.append(c.tobytes())
 
 
 #config LSB
@@ -68,7 +73,7 @@ elif distribute_or_recovery == "r":
     shadowNumbers = []
 
     for index, carrier in enumerate(carriers_data):
-        shadow = recover_shadow(carrier, LSB, width, height, k)
+        shadow = recover_shadow(carrier, LSB, width, height, k, carriers_byte_arrays[index])
         shadows.append(shadow)
         shadowNumbers.append(read_reserved_bit(f"{output_dir}/{fileNames[index]}"))
 
